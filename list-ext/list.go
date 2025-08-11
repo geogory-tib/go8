@@ -9,6 +9,9 @@ func FindNodeAt(index int, list *list.List) (node *list.Element) {
 	}
 	return node
 }
+
+/*
+unused function may be useful somewhere else though
 func InsertValueAfter(index int, str string, list *list.List) {
 	node := list.Front()
 	for i := 0; i < index; i++ {
@@ -16,3 +19,4 @@ func InsertValueAfter(index int, str string, list *list.List) {
 	}
 	list.InsertAfter(str, node)
 }
+*/

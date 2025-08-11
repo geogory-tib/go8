@@ -2,6 +2,7 @@ package main
 
 import (
 	"container/list"
+	"fmt"
 	"gotext/list-ext"
 	"gotext/termfunc"
 	"gotext/textio"
@@ -20,12 +21,17 @@ import (
 * */
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatal("gotext Error: No file specified?")
+		fmt.Print("gotext Error: No file specified?\n")
+		os.Exit(1)
 	}
 	var screen termfuc.Screen
 	file, err := os.Open(os.Args[1])
 	if err != nil {
-		log.Fatal(err)
+		if os.IsNotExist(err) {
+			file, err = os.Create(os.Args[1])
+		} else {
+			log.Fatal(err)
+		}
 	}
 	screen.FileSize, screen.StrList = textio.LoadFileData(file)
 	file.Close()
@@ -33,26 +39,27 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	Mwidth, Mheight := termbox.Size()
+	Mwidth, Mheight := termbox.Size() // size of the screen
 	termfuc.Draw(screen, Mwidth, Mheight)
 	termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
-	var editNode *list.Element
-	var editLen int
+	var editNode *list.Element //current node being editied
+	var editLen int            // the len of the edited text to know how long the edited string is
 	defer termbox.Close()
 	for {
 		event := termbox.PollEvent()
-		if event.Type == termbox.EventKey {
+		if event.Type == termbox.EventKey { // block dealing with event keys
 			switch event.Key {
 			case termbox.KeyEsc:
-				if screen.InsertMode == false {
+				if screen.InsertMode == false { // exit program if not in edit mode
 					return
+				} else if screen.InsertMode == true {
+					screen.InsertMode = false
+					editNode.Value = termfuc.GetStringAtLine(screen.CursorY, editLen)
+					editNode = nil
+					editLen = 0
+					termfuc.Draw(screen, Mwidth, Mheight)
+					termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
 				}
-				screen.InsertMode = false
-				editNode.Value = termfuc.GetStringAtLine(screen.CursorY, editLen)
-				editNode = nil
-				editLen = 0
-				termfuc.Draw(screen, Mwidth, Mheight)
-				termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
 			case termbox.KeyPgdn:
 				if (screen.Offset + uint32(Mheight)) < uint32(screen.StrList.Len()) {
 					screen.Offset += uint32(Mheight)
@@ -66,7 +73,7 @@ func main() {
 					termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
 				}
 			case termbox.KeyArrowDown:
-				if screen.CursorY < Mheight && screen.InsertMode != true {
+				if screen.CursorY < (Mheight-1) && screen.InsertMode != true {
 					screen.CursorY++
 					termbox.SetCursor(screen.CursorX, screen.CursorY)
 					termbox.Flush()
@@ -121,20 +128,19 @@ func main() {
 				termbox.Flush()
 			}
 			if event.Key == termbox.KeyEnter {
-				listext.InsertValueAfter(screen.CursorY, "\n", screen.StrList)
+				editNode = screen.StrList.InsertAfter("\n", editNode) // if user presses enter w hile in edit mode on a line a new node is pushed after the line currently being ediited
 				screen.CursorY++
-				screen.CursorX = 0
+				screen.CursorX = 0 //cursor is reset
 				termbox.SetCursor(screen.CursorX, screen.CursorY)
 				termfuc.Draw(screen, Mwidth, Mheight)
-
+				termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
 			}
 		}
-
 		if event.Ch != 0 {
 			if event.Ch == 'i' && screen.InsertMode == false {
 				screen.InsertMode = true
-				editNode = listext.FindNodeAt(screen.CursorY, screen.StrList)
-				nodeVaule := reflect.ValueOf(editNode.Value)
+				editNode = listext.FindNodeAt(screen.CursorY, screen.StrList) // once you enter insert mode it grabs the node at the line
+				nodeVaule := reflect.ValueOf(editNode.Value)                  // reflection to cast the value to a string
 				editLen = len(nodeVaule.String())
 				termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
 			} else if screen.InsertMode == true {

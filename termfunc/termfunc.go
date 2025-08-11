@@ -9,6 +9,7 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
+// struct repersenting the screen data being displayed
 type Screen struct {
 	StrList          *list.List
 	FileSize         int64
@@ -17,7 +18,7 @@ type Screen struct {
 	InsertMode       bool
 }
 
-// prints a string starting at the given input
+// prints a string starting at the given width and height
 func tbPrint(width, height int, str string, fg, bg termbox.Attribute) {
 	x := width
 	y := height
@@ -37,10 +38,10 @@ func DrawBottomBar(Mwidth, Mheight int, screenData Screen, fileName string) {
 	NoOfBytes := strconv.Itoa(int(screenData.FileSize))
 	tbPrint(bytesCountX, Mheight-1, NoOfBytes, termbox.ColorBlack, termbox.ColorWhite)
 	if screenData.InsertMode == true {
-		tbPrint(bytesCountX+3, Mheight-1, "EDIT!", termbox.ColorBlack|termbox.AttrBold, termbox.ColorWhite) // if in edit mode it will display it on the bar
+		tbPrint(bytesCountX+len(NoOfBytes)+3, Mheight-1, "EDIT!", termbox.ColorBlack|termbox.AttrBold, termbox.ColorWhite) // if in edit mode it will display it on the bar
 	}
 	for x := range Mwidth {
-		termbox.SetBg(x, Mheight-1, termbox.ColorWhite) // paint the bottom bar white with text black
+		termbox.SetBg(x, Mheight-1, termbox.ColorWhite) // paint the bottom bar white with black text
 		termbox.SetFg(x, Mheight-1, termbox.ColorBlack)
 	}
 	termbox.Flush()
@@ -56,7 +57,7 @@ func Draw(screenData Screen, Mwidth, Mheight int) {
 	}
 
 	for height < Mheight-1 && startElement != nil {
-		value := reflect.ValueOf(startElement.Value) // reflection because im using the built in linked list libary
+		value := reflect.ValueOf(startElement.Value) // reflection because im using the built in linked list module
 		line := value.String()                       // converting the "value" type to a string then it will be iterated through in the for loop
 		width = 0
 		for _, ch := range line {
@@ -73,6 +74,7 @@ func Draw(screenData Screen, Mwidth, Mheight int) {
 	termbox.Flush()
 }
 
+// builds a string from the screen buffer from a line with a specfied length
 func GetStringAtLine(lineY, length int) (str string) {
 	x := 0
 	var retString string

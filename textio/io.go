@@ -3,12 +3,14 @@ package textio
 import (
 	"bufio"
 	"container/list"
+
 	"io"
 	"log"
 	"os"
 	"reflect"
 )
 
+// loads file data from reader into linkedList
 func LoadFileData(file *os.File) (bytes int64, rlist *list.List) {
 	retList := list.New()
 	reader := bufio.NewReader(file)
