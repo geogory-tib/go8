@@ -61,14 +61,14 @@ func main() {
 					termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
 				}
 			case termbox.KeyPgdn:
-				if (screen.Offset + uint32(Mheight)) < uint32(screen.StrList.Len()) {
-					screen.Offset += uint32(Mheight)
+				if (screen.Offset + uint32(Mheight-1)) < uint32(screen.StrList.Len()) {
+					screen.Offset += uint32(Mheight - 1)
 					termfuc.Draw(screen, Mwidth, Mheight)
 					termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
 				}
 			case termbox.KeyPgup:
 				if screen.Offset != 0 {
-					screen.Offset -= uint32(Mheight)
+					screen.Offset -= uint32(Mheight - 1)
 					termfuc.Draw(screen, Mwidth, Mheight)
 					termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
 				}
@@ -128,8 +128,13 @@ func main() {
 				termbox.Flush()
 			}
 			if event.Key == termbox.KeyEnter {
+				editNode.Value = termfuc.GetStringAtLine(screen.CursorY, editLen)
 				editNode = screen.StrList.InsertAfter("\n", editNode) // if user presses enter w hile in edit mode on a line a new node is pushed after the line currently being ediited
 				screen.CursorY++
+				if screen.CursorY == Mheight-1 {
+					screen.Offset += uint32(Mheight - 1)
+					screen.CursorY = 0
+				}
 				screen.CursorX = 0 //cursor is reset
 				termbox.SetCursor(screen.CursorX, screen.CursorY)
 				termfuc.Draw(screen, Mwidth, Mheight)
@@ -139,8 +144,8 @@ func main() {
 		if event.Ch != 0 {
 			if event.Ch == 'i' && screen.InsertMode == false {
 				screen.InsertMode = true
-				editNode = listext.FindNodeAt(screen.CursorY, screen.StrList) // once you enter insert mode it grabs the node at the line
-				nodeVaule := reflect.ValueOf(editNode.Value)                  // reflection to cast the value to a string
+				editNode = listext.FindNodeAt(screen.CursorY, screen) // once you enter insert mode it grabs the node at the line
+				nodeVaule := reflect.ValueOf(editNode.Value)          // reflection to cast the value to a string
 				editLen = len(nodeVaule.String())
 				termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
 			} else if screen.InsertMode == true {

@@ -1,9 +1,13 @@
 package listext
 
-import "container/list"
+import (
+	"container/list"
+	termfuc "gotext/termfunc"
+)
 
-func FindNodeAt(index int, list *list.List) (node *list.Element) {
-	node = list.Front()
+func FindNodeAt(line int, screen termfuc.Screen) (node *list.Element) {
+	index := line + int(screen.Offset)
+	node = screen.StrList.Front()
 	for i := 0; i < index; i++ {
 		node = node.Next()
 	}
