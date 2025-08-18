@@ -16,6 +16,8 @@ type Screen struct {
 	Offset           uint32
 	CursorX, CursorY int
 	InsertMode       bool
+	EditNode         *list.Element // the node in the linked list that is currently being edited
+	EditLen          int           // the length of the editeded string
 }
 
 // prints a string starting at the given width and height
