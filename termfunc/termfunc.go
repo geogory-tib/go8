@@ -17,7 +17,7 @@ type Screen struct {
 	CursorX, CursorY int
 	InsertMode       bool
 	EditNode         *list.Element // the node in the linked list that is currently being edited
-	EditLen          int           // the length of the editeded string
+	EditLen          int           // the length of the edited string
 }
 
 // prints a string starting at the given width and height
@@ -64,7 +64,14 @@ func Draw(screenData Screen, Mwidth, Mheight int) {
 		width = 0
 		for _, ch := range line {
 			termbox.SetChar(width, height, ch)
-			width += runewidth.RuneWidth(ch)
+			if ch == 0x09 {
+				for i := width; i < width+4; i++ {
+					termbox.SetChar(i, height, ' ')
+				}
+				width += 4
+			} else {
+				width += runewidth.RuneWidth(ch)
+			}
 			if width > Mwidth {
 				break
 			}

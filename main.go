@@ -2,13 +2,11 @@ package main
 
 import (
 	"fmt"
-	"gotext/list-ext"
 	"gotext/logic"
 	"gotext/termfunc"
 	"gotext/textio"
 	"log"
 	"os"
-	"reflect"
 
 	"github.com/nsf/termbox-go"
 )
@@ -55,23 +53,7 @@ func main() {
 			logic.HandleEditorEventKeys(&screen, event, Mwidth, Mheight)
 		}
 		if event.Ch != 0 {
-			if event.Ch == 'i' && screen.InsertMode == false {
-				screen.InsertMode = true
-				screen.EditNode = listext.FindNodeAt(screen.CursorY, screen) // once you enter insert mode it grabs the node at the line
-				nodeVaule := reflect.ValueOf(screen.EditNode.Value)          // reflection to cast the value to a string
-				screen.EditLen = len(nodeVaule.String())
-				termfuc.DrawBottomBar(Mwidth, Mheight, screen, os.Args[1])
-			} else if screen.InsertMode == true {
-				termbox.SetChar(screen.CursorX, screen.CursorY, event.Ch)
-				screen.CursorX++
-				if screen.CursorX > screen.EditLen {
-					screen.EditLen += (screen.CursorX - screen.EditLen)
-				}
-				termbox.SetCursor(screen.CursorX, screen.CursorY)
-				termbox.Flush()
-			}
-
+			logic.HandleUserCharKeys(&screen, event, Mwidth, Mheight)
 		}
-
 	}
 }
