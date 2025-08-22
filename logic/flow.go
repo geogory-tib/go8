@@ -2,11 +2,13 @@ package logic
 
 import (
 	"gotext/list-ext"
+	"gotext/search"
 	termfuc "gotext/termfunc"
 	"gotext/textio"
 	"log"
 	"os"
 	"reflect"
+	"strconv"
 
 	"github.com/nsf/termbox-go"
 )
@@ -142,5 +144,24 @@ func HandleUserCharKeys(screen *termfuc.Screen, event termbox.Event, Mwidth, Mhe
 		}
 		termbox.SetCursor(screen.CursorX, screen.CursorY)
 		termbox.Flush()
+	}
+}
+
+func HandleSearchKeys(screen *termfuc.Screen, event termbox.Event, Mwidth, Mheight int) {
+	var userToken string // token for search
+	if event.Ch == 'g' {
+		for {
+			event = termbox.PollEvent()
+			if event.Key == termbox.KeyEnter {
+				break
+			} else if event.Ch <= 9 && event.Ch >= 0 {
+				userToken += string(event.Ch)
+			}
+		}
+		usrLine, err := strconv.Atoi(userToken)
+		if err == nil && usrLine < screen.StrList.Len() {
+			hightLightLine := search.FindLine(screen, usrLine, Mheight)
+			termfuc.HighlightLine(hightLightLine)
+		}
 	}
 }

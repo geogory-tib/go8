@@ -19,6 +19,10 @@ type Screen struct {
 	EditNode         *list.Element // the node in the linked list that is currently being edited
 	EditLen          int           // the length of the edited string
 }
+type Line struct {
+	LineY      int
+	LineLength int
+}
 
 // prints a string starting at the given width and height
 func tbPrint(width, height int, str string, fg, bg termbox.Attribute) {
@@ -95,4 +99,11 @@ func GetStringAtLine(lineY, length int) (str string) {
 	}
 	retString += "\n"
 	return retString
+}
+
+func HighlightLine(line Line) {
+	for x := range line.LineLength {
+		termbox.SetBg(x, line.LineY, termbox.ColorWhite)
+	}
+	termbox.Flush()
 }

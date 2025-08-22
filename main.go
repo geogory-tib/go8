@@ -54,6 +54,7 @@ func main() {
 		}
 		if event.Ch != 0 {
 			logic.HandleUserCharKeys(&screen, event, Mwidth, Mheight)
+			logic.HandleSearchKeys(&screen, event, Mwidth, Mheight)
 		}
 	}
 }
