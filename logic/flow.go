@@ -53,11 +53,28 @@ func HandleEventKeys(screen *termfuc.Screen, event termbox.Event, Mwidth, Mheigh
 			termbox.SetCursor(screen.CursorX, screen.CursorY)
 			termbox.Flush()
 		}
+		if screen.CursorY == Mheight-1 {
+			if screen.Offset < uint32(screen.StrList.Len()) {
+				screen.Offset++
+			}
+			screen.CursorY = Mheight - 1
+			termfuc.Draw(*screen, Mwidth, Mheight)
+			termfuc.DrawBottomBar(Mwidth, Mheight, *screen, os.Args[1])
+
+		}
 	case termbox.KeyArrowUp:
-		if screen.CursorY > 0 && screen.InsertMode != true {
+		if screen.InsertMode != true {
 			screen.CursorY--
 			termbox.SetCursor(screen.CursorX, screen.CursorY)
 			termbox.Flush()
+		}
+		if screen.CursorY < 0 && screen.Offset != 0 {
+			screen.CursorY = 0
+			if screen.Offset > 0 {
+				screen.Offset--
+			}
+			termfuc.Draw(*screen, Mwidth, Mheight)
+			termfuc.DrawBottomBar(Mwidth, Mheight, *screen, os.Args[1])
 		}
 	case termbox.KeyArrowRight:
 		if screen.CursorX < Mwidth {
@@ -147,20 +164,23 @@ func HandleUserCharKeys(screen *termfuc.Screen, event termbox.Event, Mwidth, Mhe
 	}
 }
 
-func HandleSearchKeys(screen *termfuc.Screen, event termbox.Event, Mwidth, Mheight int) {
+// handles any user search keys need to add feed back to these keys eventually
+func HandleSearchKeys(screen *termfuc.Screen, key rune, Mwidth, Mheight int) {
 	var userToken string // token for search
-	if event.Ch == 'g' {
+	if key == 'g' {
 		for {
-			event = termbox.PollEvent()
+			event := termbox.PollEvent()
 			if event.Key == termbox.KeyEnter {
 				break
-			} else if event.Ch <= 9 && event.Ch >= 0 {
+			} else if event.Ch <= 9 || event.Ch >= 0 {
 				userToken += string(event.Ch)
 			}
 		}
 		usrLine, err := strconv.Atoi(userToken)
 		if err == nil && usrLine < screen.StrList.Len() {
-			hightLightLine := search.FindLine(screen, usrLine, Mheight)
+			hightLightLine := search.FindLine(screen, usrLine-1, Mheight)
+			termfuc.Draw(*screen, Mwidth, Mheight)
+			termfuc.DrawBottomBar(Mwidth, Mheight, *screen, os.Args[1])
 			termfuc.HighlightLine(hightLightLine)
 		}
 	}
