@@ -23,6 +23,11 @@ func Load_rom(filename string, chip8 *types.Chip8) {
 	for i := types.PROGRAM_ADDR; i < len(buffer); i++ {
 		chip8.Ram[i] = buffer[i-types.PROGRAM_ADDR]
 	}
+	index := types.FONT_ADDR
+	for _, font_byte := range types.Font_Set {
+		chip8.Ram[index] = font_byte
+		index++
+	}
 	chip8.Emu_state = types.RUNNING
 	buffer = nil
 	chip8.PC = types.PROGRAM_ADDR
@@ -47,14 +52,39 @@ func fetch_op(chip *types.Chip8) (op uint16) {
 
 func decode_op(op uint16, chip *types.Chip8) {
 	if op == 0xE0 {
-		fmt.Println("clear screen")
+		x := 0
+		for i := range len(chip.Display) {
+			chip.Display[i][0] = false
+			x++
+		}
 		return
 	}
 	op_type := op >> 12
 	op_type = op_type << 12
 	switch op_type {
 	case opcodes.DRAW:
-		fmt.Println("DRAW")
+		sprite_address := chip.I
+		length := (op & 0x000F)
+		x_reg := (op & 0x0F00) >> 8
+		y_reg := (op & 0x00F0) >> 8
+		x_pos := chip.V[x_reg]
+		y_pos := chip.V[y_reg]
+		for y := y_pos; y < byte(length); y++ {
+			for x := x_pos; x < 8; x++ {
+				sprite_byte := chip.Ram[sprite_address]
+				sprite_bit := sprite_byte & (0x80 >> x_pos)
+				if x >= 64 {
+					break
+				}
+				if sprite_bit != 0 {
+					chip.Display[y][x] = true
+				}
+			}
+			y++
+			if y >= 32 {
+				break
+			}
+		}
 	case opcodes.JUMP:
 		address_shift := op << 12
 		address := address_shift >> 12
