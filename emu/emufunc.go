@@ -66,19 +66,21 @@ func decode_op(op uint16, chip *types.Chip8) {
 		sprite_address := chip.I
 		length := (op & 0x000F)
 		x_reg := (op & 0x0F00) >> 8
-		y_reg := (op & 0x00F0) >> 8
+		y_reg := (op & 0x00F0) >> 4
 		x_pos := chip.V[x_reg]
 		y_pos := chip.V[y_reg]
 		for y := y_pos; y < byte(length); y++ {
-			for x := x_pos; x < 8; x++ {
+			x_len := 0
+			for x := x_len; x_len < 8; x++ {
 				sprite_byte := chip.Ram[sprite_address]
-				sprite_bit := sprite_byte & (0x80 >> x_pos)
+				sprite_bit := (sprite_byte&(0x01<<x_pos))>>x_pos - 1
 				if x >= 64 {
 					break
 				}
 				if sprite_bit != 0 {
 					chip.Display[y][x] = true
 				}
+				x++
 			}
 			y++
 			if y >= 32 {

@@ -1,20 +1,27 @@
 package graphics
 
 import (
-	"image/color"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func Draw_Buffer(emu_screen *rl.RenderTexture2D, chip8_screen [][]bool) {
-	rl.ClearBackground(color.RGBA{0, 0, 0, 0})
+func Draw_Buffer(emu_screen *rl.RenderTexture2D, chip8_screen [32][64]bool) {
 	rl.BeginTextureMode(*emu_screen)
+	rl.DrawRectangle(0, 0, 40, 22, rl.White)
 	for y := range len(chip8_screen) {
 		for x := range len(chip8_screen[y]) {
 			if chip8_screen[y][x] {
-				rl.DrawPixel(int32(x), int32(y), color.RGBA{255, 255, 255, 0})
+				rl.DrawPixel(int32(x), int32(y), rl.White)
 			}
 		}
 	}
 
+	rl.EndTextureMode()
+	source_rect := rl.NewRectangle(float32(-emu_screen.Texture.Height), float32(emu_screen.Texture.Width), 0, 0)
+
+	dest_rect := rl.NewRectangle(float32(rl.GetScreenHeight()), float32(rl.GetScreenHeight()), 0, 0)
+	origin := rl.NewVector2(0.0, 0.0)
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.Black)
+	rl.DrawTexturePro(emu_screen.Texture, source_rect, dest_rect, origin, 0.0, rl.White)
+	rl.EndDrawing()
 }
