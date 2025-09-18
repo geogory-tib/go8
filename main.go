@@ -5,6 +5,7 @@ import (
 	"go8/graphics"
 	"go8/types"
 	"image/color"
+	"os"
 
 	"github.com/gen2brain/raylib-go/raylib"
 )
@@ -18,7 +19,7 @@ func main() {
 	rl.ClearBackground(color.RGBA{0, 0, 0, 0})
 	rl.EndDrawing()
 	var chip8 types.Chip8
-	emu.Load_rom("ibmlogo.ch8", &chip8)
+	emu.Load_rom(os.Args[1], &chip8)
 	for !rl.WindowShouldClose() {
 		emu.Chip8_cycle(&chip8)
 		graphics.Draw_Buffer(&emulator_screen, chip8.Display)

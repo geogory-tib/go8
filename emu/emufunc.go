@@ -69,23 +69,26 @@ func decode_op(op uint16, chip *types.Chip8) {
 		y_reg := (op & 0x00F0) >> 4
 		x_pos := chip.V[x_reg]
 		y_pos := chip.V[y_reg]
-		for y := y_pos; y < byte(length); y++ {
+		y_len := 0
+		for y := y_pos; byte(y_len) < byte(length); y++ {
 			x_len := 0
-			for x := x_len; x_len < 8; x++ {
+			if y == 32 {
+				return
+			}
+			for x := x_pos; x_len < 8; x++ {
 				sprite_byte := chip.Ram[sprite_address]
-				sprite_bit := (sprite_byte&(0x01<<x_pos))>>x_pos - 1
+				sprite_bit := sprite_byte & (0x80 >> x_len)
 				if x >= 64 {
 					break
 				}
 				if sprite_bit != 0 {
 					chip.Display[y][x] = true
 				}
-				x++
+				x_len++
 			}
-			y++
-			if y >= 32 {
-				break
-			}
+			sprite_address++
+			y_len++
+
 		}
 	case opcodes.JUMP:
 		address_shift := op << 12
