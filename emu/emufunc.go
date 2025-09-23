@@ -6,6 +6,7 @@ import (
 	"go8/opcodes"
 	"go8/types"
 	"log"
+	"math/rand"
 	"os"
 )
 
@@ -59,6 +60,11 @@ func decode_op(op uint16, chip *types.Chip8) {
 		}
 		return
 	}
+	if op == 0x0EE {
+		chip.Sp--
+		chip.PC = chip.Stack[chip.Sp]
+		chip.Stack[chip.Sp] = 0x0
+	}
 	op_type := op >> 12
 	op_type = op_type << 12
 	switch op_type {
@@ -94,6 +100,11 @@ func decode_op(op uint16, chip *types.Chip8) {
 		address_shift := op << 12
 		address := address_shift >> 12
 		chip.PC = address
+	case opcodes.CALL:
+		sub_address := op & 0x0FFF
+		chip.Stack[chip.Sp] = chip.PC
+		chip.Sp++
+		chip.PC = sub_address
 	case opcodes.ADD:
 		reg_addres := (op & 0x0F00) >> 8
 		add_value := (op & 0x00FF)
@@ -105,5 +116,57 @@ func decode_op(op uint16, chip *types.Chip8) {
 		reg_addres := (op & 0x0F00) >> 8
 		reg_value := (op & 0x00FF)
 		chip.V[reg_addres] = byte(reg_value)
+	case opcodes.SKIP_IF:
+		reg_addres := (op & 0x0F00) >> 8
+		comp_value := (op & 0x0FF)
+		if chip.V[reg_addres] == byte(comp_value) {
+			chip.PC += 2
+		}
+	case opcodes.SKIP_NOT:
+		reg_addres := (op & 0x0F00) >> 8
+		comp_value := (op & 0x0FF)
+		if chip.V[reg_addres] != byte(comp_value) {
+			chip.PC += 2
+		}
+	case opcodes.SKIP_REG:
+		reg_x := (op & 0x0F00) >> 8
+		reg_y := (op & 0x00F0) >> 4
+		if chip.V[reg_x] == chip.V[reg_y] {
+			chip.PC += 2
+		}
+	case opcodes.SKIP_NOT_REG:
+		reg_x := (op & 0x0F00) >> 8
+		reg_y := (op & 0x00F0) >> 4
+		if chip.V[reg_x] != chip.V[reg_y] {
+			chip.PC += 2
+		}
+	case opcodes.RAND:
+		reg_addr := (op & 0x0F00) >> 8
+		bit_and_value := (op & 0x00FF)
+		rand_num := byte(rand.Uint32() % 255)
+		chip.V[reg_addr] = (rand_num & byte(bit_and_value))
+	case opcodes.REG_INSTRUCT:
+		handle_reg_instruct(op, chip)
+	}
+}
+func handle_reg_instruct(op uint16, chip *types.Chip8) {
+	op_type := op & 0x000F
+	switch op_type {
+	case opcodes.REG_SET:
+		reg_addr := (op & 0x0F00) >> 8
+		reg_y_addr := (op % 0x00F0) >> 4
+		chip.V[reg_addr] = chip.V[reg_y_addr]
+	case opcodes.REG_BIN_OR:
+		reg_addr := (op & 0x0F00) >> 8
+		reg_y_addr := (op % 0x00F0) >> 4
+		chip.V[reg_addr] = (chip.V[reg_addr] | chip.V[reg_y_addr])
+	case opcodes.REG_XOR:
+		reg_y_addr := (op % 0x00F0) >> 4
+		reg_addr := (op & 0x0F00) >> 8
+		chip.V[reg_addr] = (chip.V[reg_addr] ^ chip.V[reg_y_addr])
+	case opcodes.REG_ADD:
+		reg_addr := (op & 0x0F00) >> 8
+		reg_y_addr := (op % 0x00F0) >> 4
+		chip.V[reg_addr] = (chip.V[reg_addr] + chip.V[reg_y_addr])
 	}
 }
