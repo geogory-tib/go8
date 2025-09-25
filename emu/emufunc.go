@@ -2,12 +2,12 @@ package emu
 
 import (
 	"bufio"
-	"fmt"
 	"go8/opcodes"
 	"go8/types"
 	"log"
 	"math/rand"
 	"os"
+	"time"
 )
 
 func Load_rom(filename string, chip8 *types.Chip8) {
@@ -36,8 +36,8 @@ func Load_rom(filename string, chip8 *types.Chip8) {
 
 func Chip8_cycle(chip8 *types.Chip8) {
 	op := fetch_op(chip8)
-	fmt.Printf("%x  | %b\n", op, op)
 	decode_op(op, chip8)
+	time.Sleep(time.Millisecond * 16)
 
 }
 
@@ -63,7 +63,6 @@ func decode_op(op uint16, chip *types.Chip8) {
 	if op == 0x0EE {
 		chip.Sp--
 		chip.PC = chip.Stack[chip.Sp]
-		chip.Stack[chip.Sp] = 0x0
 	}
 	op_type := op >> 12
 	op_type = op_type << 12
@@ -97,8 +96,7 @@ func decode_op(op uint16, chip *types.Chip8) {
 
 		}
 	case opcodes.JUMP:
-		address_shift := op << 12
-		address := address_shift >> 12
+		address := (op & 0x0FFF)
 		chip.PC = address
 	case opcodes.CALL:
 		sub_address := op & 0x0FFF
@@ -154,19 +152,57 @@ func handle_reg_instruct(op uint16, chip *types.Chip8) {
 	switch op_type {
 	case opcodes.REG_SET:
 		reg_addr := (op & 0x0F00) >> 8
-		reg_y_addr := (op % 0x00F0) >> 4
+		reg_y_addr := (op & 0x00F0) >> 4
 		chip.V[reg_addr] = chip.V[reg_y_addr]
 	case opcodes.REG_BIN_OR:
 		reg_addr := (op & 0x0F00) >> 8
-		reg_y_addr := (op % 0x00F0) >> 4
+		reg_y_addr := (op & 0x00F0) >> 4
 		chip.V[reg_addr] = (chip.V[reg_addr] | chip.V[reg_y_addr])
 	case opcodes.REG_XOR:
-		reg_y_addr := (op % 0x00F0) >> 4
+		reg_y_addr := (op & 0x00F0) >> 4
 		reg_addr := (op & 0x0F00) >> 8
 		chip.V[reg_addr] = (chip.V[reg_addr] ^ chip.V[reg_y_addr])
 	case opcodes.REG_ADD:
 		reg_addr := (op & 0x0F00) >> 8
-		reg_y_addr := (op % 0x00F0) >> 4
+		reg_y_addr := (op & 0x00F0) >> 4
 		chip.V[reg_addr] = (chip.V[reg_addr] + chip.V[reg_y_addr])
+		if chip.V[reg_addr] == 0 && chip.V[reg_y_addr] != 0 {
+			chip.V[0xF] = 1
+		} else {
+			chip.V[0xF] = 0
+		}
+	case opcodes.REG_SUB_X_Y:
+		reg_addr := (op & 0x0F00) >> 8
+		reg_addr_y := (op & 0x00F0) >> 4
+		if chip.V[reg_addr] < chip.V[reg_addr_y] {
+			chip.V[0xF] = 0
+		} else {
+			chip.V[0xF] = 1
+		}
+		chip.V[reg_addr] = (chip.V[reg_addr] - chip.V[reg_addr_y])
+	case opcodes.REG_SUB_Y_X:
+		reg_addr := (op & 0x0F00) >> 8
+		reg_addr_y := (op & 0x00F0) >> 4
+		if chip.V[reg_addr_y] < chip.V[reg_addr] {
+			chip.V[0xF] = 0
+		} else {
+			chip.V[0xF] = 1
+		}
+		chip.V[reg_addr] = (chip.V[reg_addr_y] - chip.V[reg_addr])
+	case opcodes.REG_SHIFT_R:
+		reg_addr := (op & 0x0F00) >> 8
+		reg_addr_y := (op & 0x00F0) >> 4
+		//make this action configurable my user at some point
+		chip.V[reg_addr] = chip.V[reg_addr_y]
+		chip.V[0xF] = chip.V[reg_addr_y] & 0x01
+		chip.V[reg_addr] = (chip.V[reg_addr] >> 1)
+	case opcodes.REG_SHIFT_L:
+		reg_addr := (op & 0x0F00) >> 8
+		reg_addr_y := (op & 0x00F0) >> 4
+		//make this action configurable my user at some point
+		chip.V[reg_addr] = chip.V[reg_addr_y]
+		chip.V[0xF] = chip.V[reg_addr_y] & (0x01 << 7)
+		chip.V[reg_addr] = (chip.V[reg_addr] << 1)
+
 	}
 }

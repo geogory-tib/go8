@@ -28,6 +28,10 @@ func (Self *Chip8) Print_State() {
 	fmt.Println(Self.Stack)
 	fmt.Println(Self.I)
 }
+func (Self Chip8) Print_Current_Exectuted_Instruction() {
+	fmt.Printf("Program Counter: %x\n", Self.PC)
+	fmt.Printf("Current Instruction: %x%x \n", Self.Ram[Self.PC], Self.Ram[Self.PC+1])
+}
 
 var Font_Set = [80]byte{
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0

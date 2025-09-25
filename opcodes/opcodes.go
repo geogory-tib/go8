@@ -22,3 +22,7 @@ const REG_BIN_OR uint16 = 0x0001
 const REG_BIN_AND uint16 = 0x0002
 const REG_XOR uint16 = 0x0003
 const REG_ADD uint16 = 0x0004
+const REG_SUB_X_Y uint16 = 0x0005
+const REG_SUB_Y_X uint16 = 0x0007
+const REG_SHIFT_R uint16 = 0x0006
+const REG_SHIFT_L uint16 = 0x000E

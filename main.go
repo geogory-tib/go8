@@ -23,6 +23,6 @@ func main() {
 	for !rl.WindowShouldClose() {
 		emu.Chip8_cycle(&chip8)
 		graphics.Draw_Buffer(&emulator_screen, chip8.Display)
-		chip8.Print_State()
+		chip8.Print_Current_Exectuted_Instruction()
 	}
 }
