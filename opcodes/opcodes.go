@@ -26,3 +26,7 @@ const REG_SUB_X_Y uint16 = 0x0005
 const REG_SUB_Y_X uint16 = 0x0007
 const REG_SHIFT_R uint16 = 0x0006
 const REG_SHIFT_L uint16 = 0x000E
+
+// this is the staart of the 0xF000 insturctions this all have to be parsed diffrently than the 0x8000 and the first set of insturctions
+const STORE_REG_TO_MEM uint16 = 0x0055
+const LOAD_FROM_MEM uint16 = 0x0065

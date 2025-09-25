@@ -37,7 +37,7 @@ func Load_rom(filename string, chip8 *types.Chip8) {
 func Chip8_cycle(chip8 *types.Chip8) {
 	op := fetch_op(chip8)
 	decode_op(op, chip8)
-	time.Sleep(time.Millisecond * 16)
+	time.Sleep(time.Millisecond * 8)
 
 }
 
@@ -64,8 +64,7 @@ func decode_op(op uint16, chip *types.Chip8) {
 		chip.Sp--
 		chip.PC = chip.Stack[chip.Sp]
 	}
-	op_type := op >> 12
-	op_type = op_type << 12
+	op_type := (op & 0xF000)
 	switch op_type {
 	case opcodes.DRAW:
 		sprite_address := chip.I
@@ -158,6 +157,11 @@ func handle_reg_instruct(op uint16, chip *types.Chip8) {
 		reg_addr := (op & 0x0F00) >> 8
 		reg_y_addr := (op & 0x00F0) >> 4
 		chip.V[reg_addr] = (chip.V[reg_addr] | chip.V[reg_y_addr])
+	case opcodes.REG_BIN_AND:
+		reg_addr := (op & 0x0F00) >> 8
+		reg_y_addr := (op & 0x00F0) >> 4
+		chip.V[reg_addr] = (chip.V[reg_addr] & chip.V[reg_y_addr])
+
 	case opcodes.REG_XOR:
 		reg_y_addr := (op & 0x00F0) >> 4
 		reg_addr := (op & 0x0F00) >> 8
@@ -193,16 +197,18 @@ func handle_reg_instruct(op uint16, chip *types.Chip8) {
 		reg_addr := (op & 0x0F00) >> 8
 		reg_addr_y := (op & 0x00F0) >> 4
 		//make this action configurable my user at some point
-		chip.V[reg_addr] = chip.V[reg_addr_y]
-		chip.V[0xF] = chip.V[reg_addr_y] & 0x01
 		chip.V[reg_addr] = (chip.V[reg_addr] >> 1)
+		chip.V[0xF] = chip.V[reg_addr_y] & 0x01
 	case opcodes.REG_SHIFT_L:
 		reg_addr := (op & 0x0F00) >> 8
 		reg_addr_y := (op & 0x00F0) >> 4
 		//make this action configurable my user at some point
 		chip.V[reg_addr] = chip.V[reg_addr_y]
-		chip.V[0xF] = chip.V[reg_addr_y] & (0x01 << 7)
 		chip.V[reg_addr] = (chip.V[reg_addr] << 1)
+		chip.V[0xF] = chip.V[reg_addr_y] & (0x01 << 7) >> 7
 
 	}
+}
+func handle_F_instructs(op uint16, chip *types.Chip8) {
+
 }
