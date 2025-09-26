@@ -14,6 +14,7 @@ const SKIP_REG uint16 = 0x5000
 const SKIP_NOT_REG uint16 = 0x9000
 const REG_INSTRUCT uint16 = 0x8000
 const RAND uint16 = 0xC000
+const F_INSTRUCT uint16 = 0xF000
 
 // this is the start of the 0x8000 insturctions these are all logical and math insturctions that only operate on registers
 
@@ -30,3 +31,5 @@ const REG_SHIFT_L uint16 = 0x000E
 // this is the staart of the 0xF000 insturctions this all have to be parsed diffrently than the 0x8000 and the first set of insturctions
 const STORE_REG_TO_MEM uint16 = 0x0055
 const LOAD_FROM_MEM uint16 = 0x0065
+const ADD_TO_I uint16 = 0x001E
+const BIN_CODED uint16 = 0x0033

@@ -7,6 +7,7 @@ import (
 // runs through 2d array of booleans and white pixel if the element is true
 func Draw_Buffer(emu_screen *rl.RenderTexture2D, chip8_screen [32][64]bool) {
 	rl.BeginTextureMode(*emu_screen) // the texture for the CHIP8 screen
+	rl.ClearBackground(rl.Black)
 	for y := range len(chip8_screen) {
 		for x := range len(chip8_screen[y]) {
 			if chip8_screen[y][x] { // draws pixel if buffer == true
