@@ -7,7 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"time"
 )
 
 func Load_rom(filename string, chip8 *types.Chip8) {
@@ -37,8 +36,6 @@ func Load_rom(filename string, chip8 *types.Chip8) {
 func Chip8_cycle(chip8 *types.Chip8) {
 	op := fetch_op(chip8)
 	decode_op(op, chip8)
-	time.Sleep(time.Millisecond * 8)
-
 }
 
 func fetch_op(chip *types.Chip8) (op uint16) {
@@ -171,8 +168,10 @@ func handle_reg_instruct(op uint16, chip *types.Chip8) {
 	case opcodes.REG_ADD:
 		reg_addr := (op & 0x0F00) >> 8
 		reg_y_addr := (op & 0x00F0) >> 4
-		chip.V[reg_addr] = (chip.V[reg_addr] + chip.V[reg_y_addr])
-		if chip.V[reg_addr] == 0 && chip.V[reg_y_addr] != 0 {
+		x_value := chip.V[reg_addr]
+		y_value := chip.V[reg_y_addr]
+		chip.V[reg_addr] = (y_value + x_value)
+		if chip.V[reg_addr] < x_value {
 			chip.V[0xF] = 1
 		} else {
 			chip.V[0xF] = 0
@@ -180,34 +179,42 @@ func handle_reg_instruct(op uint16, chip *types.Chip8) {
 	case opcodes.REG_SUB_X_Y:
 		reg_addr := (op & 0x0F00) >> 8
 		reg_addr_y := (op & 0x00F0) >> 4
-		if chip.V[reg_addr] < chip.V[reg_addr_y] {
+		x_value := chip.V[reg_addr]
+		y_value := chip.V[reg_addr_y]
+		chip.V[reg_addr] = (x_value - y_value)
+		if x_value < y_value {
 			chip.V[0xF] = 0
 		} else {
 			chip.V[0xF] = 1
 		}
-		chip.V[reg_addr] = (chip.V[reg_addr] - chip.V[reg_addr_y])
+
 	case opcodes.REG_SUB_Y_X:
 		reg_addr := (op & 0x0F00) >> 8
 		reg_addr_y := (op & 0x00F0) >> 4
-		if chip.V[reg_addr_y] < chip.V[reg_addr] {
+		x_value := chip.V[reg_addr]
+		y_value := chip.V[reg_addr_y]
+		chip.V[reg_addr] = (y_value - x_value)
+		if y_value < x_value {
 			chip.V[0xF] = 0
 		} else {
 			chip.V[0xF] = 1
 		}
-		chip.V[reg_addr] = (chip.V[reg_addr_y] - chip.V[reg_addr])
+
 	case opcodes.REG_SHIFT_R:
 		reg_addr := (op & 0x0F00) >> 8
-		reg_addr_y := (op & 0x00F0) >> 4
+		//reg_addr_y := (op & 0x00F0) >> 4
 		//make this action configurable my user at some point
+		bit_to_be_shifted := chip.V[reg_addr] & 0x01
 		chip.V[reg_addr] = (chip.V[reg_addr] >> 1)
-		chip.V[0xF] = chip.V[reg_addr_y] & 0x01
+		chip.V[0xF] = bit_to_be_shifted
 	case opcodes.REG_SHIFT_L:
 		reg_addr := (op & 0x0F00) >> 8
-		reg_addr_y := (op & 0x00F0) >> 4
+		//reg_addr_y := (op & 0x00F0) >> 4
 		//make this action configurable my user at some point
-		chip.V[reg_addr] = chip.V[reg_addr_y]
+		//	chip.V[reg_addr] = chip.V[reg_addr_y]
+		bit_to_be_shifted := (chip.V[reg_addr] & 0x80) >> 7
 		chip.V[reg_addr] = (chip.V[reg_addr] << 1)
-		chip.V[0xF] = chip.V[reg_addr_y] & (0x01 << 7) >> 7
+		chip.V[0xF] = bit_to_be_shifted
 
 	}
 }
