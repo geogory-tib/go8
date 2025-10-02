@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/gen2brain/raylib-go/raylib"
 	"go8/emu"
 	"go8/graphics"
 	"go8/types"
 	"image/color"
 	"os"
-
-	"github.com/gen2brain/raylib-go/raylib"
+	"time"
 )
 
 func main() {
@@ -24,6 +24,6 @@ func main() {
 		emu.Chip8_cycle(&chip8)
 		graphics.Draw_Buffer(&emulator_screen, &chip8)
 		graphics.Handle_key(&chip8)
-		chip8.Print_Current_Exectuted_Instruction()
+		time.Sleep(time.Millisecond * 2)
 	}
 }

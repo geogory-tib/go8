@@ -103,7 +103,12 @@ func decode_op(op uint16, chip *types.Chip8) {
 					break
 				}
 				if sprite_bit != 0 {
-					chip.Display[y][x] = true
+					if chip.Display[y][x] == true {
+						chip.Display[y][x] = false
+						chip.V[15] = 1
+					} else {
+						chip.Display[y][x] = true
+					}
 				}
 				x_len++
 			}
