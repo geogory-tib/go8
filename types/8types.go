@@ -1,6 +1,8 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const RUNNING = true
 const PAUSED = false
@@ -12,6 +14,7 @@ type Chip8 struct {
 	V           [16]byte
 	Ram         [4096]byte
 	Display     [32][64]bool
+	Key_board   [16]bool
 	PC          uint16
 	I           uint16
 	Stack       [16]uint16

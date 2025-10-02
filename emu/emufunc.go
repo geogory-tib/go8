@@ -7,7 +7,20 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"time"
 )
+
+func Decrement_timers(chip8 *types.Chip8) {
+	for {
+		if chip8.Delay_Timer > 0 {
+			chip8.Delay_Timer--
+		}
+		if chip8.Sound_Timer > 0 {
+			chip8.Sound_Timer--
+		}
+		time.Sleep(time.Millisecond * 16)
+	}
+}
 
 func Load_rom(filename string, chip8 *types.Chip8) {
 	rom_file, err := os.Open(filename)
@@ -34,6 +47,12 @@ func Load_rom(filename string, chip8 *types.Chip8) {
 }
 
 func Chip8_cycle(chip8 *types.Chip8) {
+	if chip8.Delay_Timer > 0 {
+		chip8.Delay_Timer--
+	}
+	if chip8.Sound_Timer > 0 {
+		chip8.Sound_Timer--
+	}
 	op := fetch_op(chip8)
 	decode_op(op, chip8)
 }
@@ -49,17 +68,18 @@ func fetch_op(chip *types.Chip8) (op uint16) {
 }
 
 func decode_op(op uint16, chip *types.Chip8) {
-	if op == 0xE0 {
-		x := 0
-		for i := range len(chip.Display) {
-			chip.Display[i][0] = false
-			x++
+	if op == 0x00E0 {
+		for y := range 32 {
+			for x := range 64 {
+				chip.Display[y][x] = false
+			}
 		}
 		return
 	}
-	if op == 0x0EE {
+	if op == 0x00EE {
 		chip.Sp--
 		chip.PC = chip.Stack[chip.Sp]
+		return
 	}
 	op_type := (op & 0xF000)
 	switch op_type {
@@ -68,8 +88,8 @@ func decode_op(op uint16, chip *types.Chip8) {
 		length := (op & 0x000F)
 		x_reg := (op & 0x0F00) >> 8
 		y_reg := (op & 0x00F0) >> 4
-		x_pos := chip.V[x_reg]
-		y_pos := chip.V[y_reg]
+		x_pos := chip.V[x_reg] % 64
+		y_pos := chip.V[y_reg] % 32
 		y_len := 0
 		for y := y_pos; byte(y_len) < byte(length); y++ {
 			x_len := 0
@@ -94,6 +114,9 @@ func decode_op(op uint16, chip *types.Chip8) {
 	case opcodes.JUMP:
 		address := (op & 0x0FFF)
 		chip.PC = address
+	case opcodes.JUMP_WITH_OFF:
+		addr := op & 0x0FFF
+		chip.I = addr + uint16(chip.V[0])
 	case opcodes.CALL:
 		sub_address := op & 0x0FFF
 		chip.Stack[chip.Sp] = chip.PC
@@ -143,7 +166,26 @@ func decode_op(op uint16, chip *types.Chip8) {
 		handle_reg_instruct(op, chip)
 	case opcodes.F_INSTRUCT:
 		handle_F_instructs(op, chip)
+	case opcodes.E_INSTRUCT:
+		bottom_nibble := op & 0x00FF
+		switch bottom_nibble {
+		case 0x009E:
+			reg_addr := (op & 0x0F00) >> 8
+			reg_value := chip.V[reg_addr]
+			if chip.Key_board[reg_value] {
+				chip.PC += 2
+			}
+
+		case 0x00A1:
+			reg_addr := (op & 0x0F00) >> 8
+			reg_value := chip.V[reg_addr]
+			if chip.Key_board[reg_value] == false {
+				chip.PC += 2
+			}
+		}
+
 	}
+
 }
 func handle_reg_instruct(op uint16, chip *types.Chip8) {
 	op_type := op & 0x000F
@@ -245,6 +287,23 @@ func handle_F_instructs(op uint16, chip *types.Chip8) {
 		chip.Ram[chip.I+1] = value % 10
 		value /= 10
 		chip.Ram[chip.I] = value % 10
+	case opcodes.GET_KEY:
+		reg_addr := (op & 0x0F00) >> 8
+		reg_value := chip.V[reg_addr]
+		if chip.Key_board[reg_value] {
+			return
+		} else {
+			chip.PC -= 2
+		}
+	case opcodes.FONT_GET:
+		x_value := chip.V[reg_addr]
+		chip.I = uint16(x_value)
+	case opcodes.SET_VX_TO_DELAY:
+		chip.V[reg_addr] = chip.Delay_Timer
 
+	case opcodes.SET_DELAY:
+		chip.Delay_Timer = chip.V[reg_addr]
+	case opcodes.SET_SOUND:
+		chip.Sound_Timer = chip.V[reg_addr]
 	}
 }

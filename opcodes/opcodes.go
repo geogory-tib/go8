@@ -2,6 +2,7 @@ package opcodes
 
 const CLEAR uint16 = 0x00E0
 const JUMP uint16 = 0x1000
+const JUMP_WITH_OFF uint16 = 0xB000
 const SET uint16 = 0x6000
 const ADD uint16 = 0x7000
 const RETURN uint16 = 0x0EE
@@ -15,6 +16,7 @@ const SKIP_NOT_REG uint16 = 0x9000
 const REG_INSTRUCT uint16 = 0x8000
 const RAND uint16 = 0xC000
 const F_INSTRUCT uint16 = 0xF000
+const E_INSTRUCT uint16 = 0xE000
 
 // this is the start of the 0x8000 insturctions these are all logical and math insturctions that only operate on registers
 
@@ -28,8 +30,13 @@ const REG_SUB_Y_X uint16 = 0x0007
 const REG_SHIFT_R uint16 = 0x0006
 const REG_SHIFT_L uint16 = 0x000E
 
-// this is the staart of the 0xF000 insturctions this all have to be parsed diffrently than the 0x8000 and the first set of insturctions
+// this is the staart of the 0xF000 insturctions this all have to be parsed diffrently than the 0xF000 and the first set of insturctions
 const STORE_REG_TO_MEM uint16 = 0x0055
 const LOAD_FROM_MEM uint16 = 0x0065
 const ADD_TO_I uint16 = 0x001E
 const BIN_CODED uint16 = 0x0033
+const GET_KEY uint16 = 0x000A
+const FONT_GET uint16 = 0x0029
+const SET_VX_TO_DELAY = 0x0007
+const SET_DELAY uint16 = 0x0015
+const SET_SOUND uint16 = 0x0018

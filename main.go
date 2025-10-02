@@ -22,7 +22,8 @@ func main() {
 	emu.Load_rom(os.Args[1], &chip8)
 	for !rl.WindowShouldClose() {
 		emu.Chip8_cycle(&chip8)
-		graphics.Draw_Buffer(&emulator_screen, chip8.Display)
+		graphics.Draw_Buffer(&emulator_screen, &chip8)
+		graphics.Handle_key(&chip8)
 		chip8.Print_Current_Exectuted_Instruction()
 	}
 }
