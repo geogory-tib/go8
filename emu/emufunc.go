@@ -7,20 +7,10 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"time"
 )
 
-func Decrement_timers(chip8 *types.Chip8) {
-	for {
-		if chip8.Delay_Timer > 0 {
-			chip8.Delay_Timer--
-		}
-		if chip8.Sound_Timer > 0 {
-			chip8.Sound_Timer--
-		}
-		time.Sleep(time.Millisecond * 16)
-	}
-}
+var was_key_pressed bool = false
+var previous_key_index int = 0
 
 func Load_rom(filename string, chip8 *types.Chip8) {
 	rom_file, err := os.Open(filename)
@@ -294,12 +284,22 @@ func handle_F_instructs(op uint16, chip *types.Chip8) {
 		chip.Ram[chip.I] = value % 10
 	case opcodes.GET_KEY:
 		reg_addr := (op & 0x0F00) >> 8
-		reg_value := chip.V[reg_addr]
-		if chip.Key_board[reg_value] {
-			return
-		} else {
-			chip.PC -= 2
+		if was_key_pressed {
+			if !chip.Key_board[previous_key_index] {
+				was_key_pressed = false
+				chip.V[reg_addr] = byte(previous_key_index)
+				previous_key_index = 0
+				return
+			}
 		}
+		for key_index, key_down := range chip.Key_board {
+			if key_down {
+				was_key_pressed = true
+				previous_key_index = key_index
+
+			}
+		}
+		chip.PC -= 2
 	case opcodes.FONT_GET:
 		x_value := chip.V[reg_addr]
 		chip.I = uint16(x_value)
