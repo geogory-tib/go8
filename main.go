@@ -24,6 +24,6 @@ func main() {
 		emu.Chip8_cycle(&chip8)
 		graphics.Draw_Buffer(&emulator_screen, &chip8)
 		graphics.Handle_key(&chip8)
-		time.Sleep(time.Millisecond * 2)
+		time.Sleep(time.Millisecond * 6)
 	}
 }

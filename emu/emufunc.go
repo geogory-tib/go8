@@ -111,7 +111,7 @@ func decode_op(op uint16, chip *types.Chip8) {
 		chip.PC = address
 	case opcodes.JUMP_WITH_OFF:
 		addr := op & 0x0FFF
-		chip.I = addr + uint16(chip.V[0])
+		chip.PC = addr + uint16(chip.V[0])
 	case opcodes.CALL:
 		sub_address := op & 0x0FFF
 		chip.Stack[chip.Sp] = chip.PC
@@ -193,15 +193,18 @@ func handle_reg_instruct(op uint16, chip *types.Chip8) {
 		reg_addr := (op & 0x0F00) >> 8
 		reg_y_addr := (op & 0x00F0) >> 4
 		chip.V[reg_addr] = (chip.V[reg_addr] | chip.V[reg_y_addr])
+		chip.V[0xF] = 0
 	case opcodes.REG_BIN_AND:
 		reg_addr := (op & 0x0F00) >> 8
 		reg_y_addr := (op & 0x00F0) >> 4
 		chip.V[reg_addr] = (chip.V[reg_addr] & chip.V[reg_y_addr])
+		chip.V[0xF] = 0
 
 	case opcodes.REG_XOR:
 		reg_y_addr := (op & 0x00F0) >> 4
 		reg_addr := (op & 0x0F00) >> 8
 		chip.V[reg_addr] = (chip.V[reg_addr] ^ chip.V[reg_y_addr])
+		chip.V[0xF] = 0
 	case opcodes.REG_ADD:
 		reg_addr := (op & 0x0F00) >> 8
 		reg_y_addr := (op & 0x00F0) >> 4
@@ -239,18 +242,18 @@ func handle_reg_instruct(op uint16, chip *types.Chip8) {
 
 	case opcodes.REG_SHIFT_R:
 		reg_addr := (op & 0x0F00) >> 8
-		//reg_addr_y := (op & 0x00F0) >> 4
+		reg_addr_y := (op & 0x00F0) >> 4
 		//make this action configurable my user at some point
-		bit_to_be_shifted := chip.V[reg_addr] & 0x01
-		chip.V[reg_addr] = (chip.V[reg_addr] >> 1)
+		bit_to_be_shifted := chip.V[reg_addr_y] & 0x01
+		chip.V[reg_addr] = (chip.V[reg_addr_y] >> 1)
 		chip.V[0xF] = bit_to_be_shifted
 	case opcodes.REG_SHIFT_L:
 		reg_addr := (op & 0x0F00) >> 8
-		//reg_addr_y := (op & 0x00F0) >> 4
+		reg_addr_y := (op & 0x00F0) >> 4
 		//make this action configurable my user at some point
 		//	chip.V[reg_addr] = chip.V[reg_addr_y]
-		bit_to_be_shifted := (chip.V[reg_addr] & 0x80) >> 7
-		chip.V[reg_addr] = (chip.V[reg_addr] << 1)
+		bit_to_be_shifted := (chip.V[reg_addr_y] & 0x80) >> 7
+		chip.V[reg_addr] = (chip.V[reg_addr_y] << 1)
 		chip.V[0xF] = bit_to_be_shifted
 
 	}
@@ -260,16 +263,14 @@ func handle_F_instructs(op uint16, chip *types.Chip8) {
 	reg_addr := (op & 0x0F00) >> 8
 	switch op_type {
 	case opcodes.STORE_REG_TO_MEM:
-		mem_adress := chip.I
 		for i := 0; i <= int(reg_addr); i++ {
-			chip.Ram[mem_adress] = chip.V[i]
-			mem_adress++
+			chip.Ram[chip.I] = chip.V[i]
+			chip.I++
 		}
 	case opcodes.LOAD_FROM_MEM:
-		mem_adress := chip.I
 		for i := 0; i <= int(reg_addr); i++ {
-			chip.V[i] = chip.Ram[mem_adress]
-			mem_adress++
+			chip.V[i] = chip.Ram[chip.I]
+			chip.I++
 		}
 	case opcodes.ADD_TO_I:
 		index_value := uint16(chip.V[reg_addr])
