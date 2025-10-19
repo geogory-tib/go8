@@ -21,6 +21,8 @@ type Chip8 struct {
 	Sp          int16
 	Sound_Timer byte
 	Delay_Timer byte
+	Has_Drawn   bool
+	Frames      int
 }
 
 func (Self *Chip8) Print_State() {

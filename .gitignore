@@ -6,3 +6,5 @@ TETRIS
 PONG
 6-keypad.ch8
 chip8-test-suite/*
+./*.ch8
+

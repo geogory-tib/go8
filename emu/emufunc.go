@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// for get key instruction
 var was_key_pressed bool = false
 var previous_key_index int = 0
 
@@ -34,6 +35,7 @@ func Load_rom(filename string, chip8 *types.Chip8) {
 	chip8.Emu_state = types.RUNNING
 	buffer = nil
 	chip8.PC = types.PROGRAM_ADDR
+	chip8.Frames = 60
 }
 
 func Chip8_cycle(chip8 *types.Chip8) {
@@ -74,6 +76,7 @@ func decode_op(op uint16, chip *types.Chip8) {
 	op_type := (op & 0xF000)
 	switch op_type {
 	case opcodes.DRAW:
+		chip.Has_Drawn = true
 		sprite_address := chip.I
 		length := (op & 0x000F)
 		x_reg := (op & 0x0F00) >> 8

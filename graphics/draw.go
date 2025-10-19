@@ -9,29 +9,38 @@ import (
 var PREVIOUS_KEY int
 
 // runs through 2d array of booleans and white pixel if the element is true
-func Draw_Buffer(emu_screen *rl.RenderTexture2D, chip8 *types.Chip8) {
-	rl.BeginTextureMode(*emu_screen) // the texture for the CHIP8 screen
+func Draw_Buffer(emu_screen_image *rl.Image, emu_screen_texture *rl.Texture2D, chip8 *types.Chip8) {
+	if !chip8.Has_Drawn {
+		return
+	}
+	rl.ImageClearBackground(emu_screen_image, rl.Black) // the texture for the CHIP8 screen
 	rl.ClearBackground(rl.Black)
 	for y := range 32 {
 		for x := range 64 {
 			if chip8.Display[y][x] { // draws pixel if buffer == true
-				rl.DrawPixel(int32(x), int32(y), rl.White)
+				rl.ImageDrawPixel(emu_screen_image, int32(x), int32(y), rl.White)
 			}
 		}
 	}
-
-	rl.EndTextureMode()
-	source_rect := rl.NewRectangle(0, 0, float32(emu_screen.Texture.Width), float32(-emu_screen.Texture.Height))
+	rl.UpdateTexture(*emu_screen_texture, rl.LoadImageColors(emu_screen_image))
+	source_rect := rl.NewRectangle(0, 0, float32(emu_screen_texture.Width), float32(emu_screen_texture.Height))
 	dest_rect := rl.NewRectangle(0, 0, float32(rl.GetScreenWidth()), float32(rl.GetScreenHeight()))
 	origin := rl.NewVector2(0.0, 0.0)
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.Black)
-	rl.DrawTexturePro(emu_screen.Texture, source_rect, dest_rect, origin, 0.0, rl.White)
+	rl.DrawTexturePro(*emu_screen_texture, source_rect, dest_rect, origin, 0.0, rl.White)
 	rl.EndDrawing()
 }
 func Handle_key(chip8 *types.Chip8) {
-	for index := range len(chip8.Key_board) {
-		chip8.Key_board[index] = false
+	if rl.IsKeyDown(rl.KeyLeftControl) {
+		if rl.IsKeyDown(rl.KeyF) {
+			chip8.Frames += 60
+			if chip8.Frames == 600 {
+				chip8.Frames = 60
+			}
+			rl.SetTargetFPS(int32(chip8.Frames))
+		}
+		return
 	}
 	if rl.IsKeyDown(rl.KeyOne) {
 		chip8.Key_board[1] = true
@@ -124,18 +133,4 @@ func Handle_key(chip8 *types.Chip8) {
 		chip8.Key_board[0xF] = false
 
 	}
-
-}
-func Handle_test(chip8 *types.Chip8) {
-	if rl.IsKeyDown(rl.KeyOne) {
-		chip8.Key_board[1] = true
-	} else {
-		chip8.Key_board[1] = false
-	}
-	if rl.IsKeyDown(rl.KeyTwo) {
-		chip8.Key_board[2] = true
-	} else {
-		chip8.Key_board[2] = false
-	}
-	chip8.Key_board[0xE] = true
 }
