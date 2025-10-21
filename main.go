@@ -1,16 +1,24 @@
 package main
 
 import (
-	"github.com/gen2brain/raylib-go/raylib"
+	"fmt"
 	"go8/emu"
 	"go8/graphics"
 	"go8/types"
 	"image/color"
 	"os"
+
+	"github.com/gen2brain/raylib-go/raylib"
 )
 
 func main() {
-	rl.InitWindow(500, 500, "Go-8")
+	if len(os.Args) == 1 {
+		fmt.Println("No rom provided. Exiting")
+		return
+	}
+	rl.SetConfigFlags(rl.FlagWindowResizable)
+	rl.InitWindow(640, 320, "Go-8")
+
 	defer rl.CloseWindow()
 	emu_screen_image := rl.GenImageColor(64, 32, rl.Black)
 	emu_screen_text := rl.LoadTextureFromImage(emu_screen_image)

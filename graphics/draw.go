@@ -10,7 +10,7 @@ var PREVIOUS_KEY int
 
 // runs through 2d array of booleans and white pixel if the element is true
 func Draw_Buffer(emu_screen_image *rl.Image, emu_screen_texture *rl.Texture2D, chip8 *types.Chip8) {
-	if !chip8.Has_Drawn {
+	if !chip8.Has_Drawn && !rl.IsWindowResized() {
 		return
 	}
 	rl.ImageClearBackground(emu_screen_image, rl.Black) // the texture for the CHIP8 screen
