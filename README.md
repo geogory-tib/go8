@@ -15,13 +15,13 @@ The only library this application depends on is the RayLibGo bindings so be sure
 To load a rom simply provide it into the programs command line arguments   
 The key board is mapped to the left side of the keyboard   
 1,2,3,C    
-(1),(2),(3),(4)    
+(1),(2),(3),(4)        
 4,5,6,D    
-(Q),(W),(E),(R)
+(Q),(W),(E),(R)     
 7,8,9,E    
-(A),(S),(D),(F)    
+(A),(S),(D),(F)       
 A,0,B,F    
-(Z),(X),(C),(V)    
+(Z),(X),(C),(V)          
 To change the target frame rate(instructions\s) press CTRL-F (it's kinda rudimentary right now but it works okay)     
 ## TODO
    
